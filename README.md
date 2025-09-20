@@ -1,9 +1,26 @@
 # raspi-openweather
-Openweathermap with the raspberry pi and a 3.5" LCD
- Raspberry pi openweather display.  This project uses the openweathermap API for weather information. 
- The script requires the Longitude and Latitude coordinates for your location. It also requires a 
- FREE  API key from openweathermap for operation. The inside temperature is obtained with a DHT22 sensor 
- connected to the Pi. The screen required is a 3.5” HDMI or a 5". The touch feature of the screen is not required 
- but is helpful to shutdown the App by clicking on the upper right corner. 
- 
-the complete project is located at https://www.hackster.io/Granpino/raspberry-pi-open-weather-display-6f12a7 
+
+Super light-weight full-screen weather display application. Memory footprint: RSS=140KB, VIRT=600KB.
+Minimal CPU load. Optimized for 800x480 screen. Tested on RaspberryPi 4.
+
+Uses free API key from https://openweathermap.org/ - simply register, create a new API key and save it
+in the `open_weather.json` file (excluded from repo via `.gitignore` for security reasons).
+
+Here's an example of `open_weather.json` with Berlin GPS coordinates (don't forget to update them
+to your location):
+
+```json
+{
+  "api_key": "PUT_YOUR_API_KEY_HERE",
+  "lat":"52.513988",
+  "lon":"13.358462"
+}
+```
+
+Screenshot
+
+![screenshot](screenshots/20250920_berlin.png)
+
+## Original source
+Github: https://github.com/granpino/raspi-openweather.git
+The complete project is located at https://www.hackster.io/Granpino/raspberry-pi-open-weather-display-6f12a7
