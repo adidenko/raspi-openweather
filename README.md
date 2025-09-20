@@ -4,7 +4,8 @@ Super light-weight full-screen weather display application. Memory footprint: RS
 Minimal CPU load. Optimized for 800x480 screen. Tested on RaspberryPi 4.
 
 Uses free API key from https://openweathermap.org/ - simply register, create a new API key and save it
-in the `open_weather.json` file (excluded from repo via `.gitignore` for security reasons).
+in the `open_weather.json` file (excluded from repo via `.gitignore` for security reasons). We're using
+API endpoint that does not require any subscription or providing CC info.
 
 Here's an example of `open_weather.json` with Berlin GPS coordinates (don't forget to update them
 to your location):
