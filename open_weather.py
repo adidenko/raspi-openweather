@@ -122,7 +122,7 @@ def update_weather():
     current_temp = round(current_temp, 1)
     current_feels_like = round(f_main["feels_like"], 1) # round to one decimal
     current_humidity = f_main["humidity"]
-    current_description = f_weather[0]["description"]
+    current_description = f_weather[0]["main"]
     icon1 = f_weather[0]["icon"]
     name = x["name"]
 
@@ -134,7 +134,7 @@ def update_weather():
     today_temp_min = round(f_main["temp_min"], 1) # round to one decimal
     today_wind_speed = x["wind"]["speed"]
 
-    today_description = f_weather[0]["description"]  # conditions
+    today_description = f_weather[0]["main"]  # conditions
     icon2 = f_weather[0]["icon"]
 
     # ================= icons
