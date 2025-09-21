@@ -21,7 +21,8 @@ settings = {
     'api_key': 'PUT_YOUR_API_KEY_HERE_OR_MODIFY_JSON_CONFIG',
     'lat': '52.5244', # Berlin
     'lon': '13.4105', # Berlin
-    'temp_unit': 'metric'#unit can be metric, or imperial
+    'wind_unit': 'kmph', # kmph (km/h) or mps (m/s)
+    'temp_unit': 'metric', #unit can be metric, or imperial
 }
 
 #set size of the screen
@@ -63,6 +64,9 @@ clock = pygame.time.Clock()
 
 def __del__(self):
 	"Destructor to make sure pygame shuts down"
+
+def mps_to_kmph(mps):
+    return round((3.6 * mps), 1)
 
 #define function that checks for mouse clicks
 def on_click():
@@ -194,7 +198,10 @@ def refresh_screen():
     today_lbl = m2font.render('Today', 1, green)
     today_descr_lbl = sfont.render(today_description, 1, white)
     minmax_lbl = mfont.render("Temp: " +str(today_temp_max)+degSYM + " / " + str(today_temp_min)+ degSYM, 1, white)
-    wind_speed_lbl = mfont.render("Wind: {} m/s".format(today_wind_speed), 1, white)
+    if settings["wind_unit"] == "mps":
+        wind_speed_lbl = mfont.render("Wind: {} m/s".format(today_wind_speed), 1, white)
+    else:
+        wind_speed_lbl = mfont.render("Wind: {} km/h".format(mps_to_kmph(today_wind_speed)), 1, white)
     today_sunrise_lbl =  mfont.render("Sunrise: {}".format(today_sunrise_str), 1, white)
     today_sunset_lbl =  mfont.render("Sunset: {}".format(today_sunset_str), 1, white)
 
