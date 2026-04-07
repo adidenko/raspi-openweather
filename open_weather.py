@@ -122,22 +122,14 @@ def update_weather():
         if x is None:
             update_weather_error = "Failed to fetch weather data after {} retries".format(max_retries)
             print(update_weather_error)
-            x = {
-                "main": {"temp": 0, "feels_like": 0, "humidity": 0, "temp_max": 0, "temp_min": 0},
-                "weather": [{"main": "N/A", "icon": "01d"}],
-                "name": "Unknown",
-                "dt": 0,
-                "sys": {"sunrise": 0, "sunset": 0},
-                "wind": {"speed": 0}
-            }
 
-        tmp_name = x.get("name", "Unknown")
-        f_main = x.get("main", {"temp": 0, "feels_like": 0, "humidity": 0, "temp_max": 0, "temp_min": 0})
-        f_weather = x.get("weather", [{"main": "N/A", "icon": "01d"}])
-        today_date = x.get("dt", 0)
-        today_sunrise = x.get("sys", {}).get("sunrise", 0)
-        today_sunset = x.get("sys", {}).get("sunset", 0)
-        today_wind_speed = x.get("wind", {}).get("speed", 0)
+    tmp_name = x.get("name", "Unknown")
+    f_main = x.get("main", {"temp": 0, "feels_like": 0, "humidity": 0, "temp_max": 0, "temp_min": 0})
+    f_weather = x.get("weather", [{"main": "N/A", "icon": "01d"}])
+    today_date = x.get("dt", 0)
+    today_sunrise = x.get("sys", {}).get("sunrise", 0)
+    today_sunset = x.get("sys", {}).get("sunset", 0)
+    today_wind_speed = x.get("wind", {}).get("speed", 0)
 
     weather_data = {
         "current_temp": round(f_main["temp"], 1),
@@ -313,13 +305,16 @@ def refresh_screen():
 
 def main():
     global click_pos
-    timer = pygame.time.get_ticks()
+    refresh_timer = pygame.time.get_ticks()
+    load_timer = pygame.time.get_ticks()
     while True:
-        seconds=(pygame.time.get_ticks() - timer)/1000
-        if seconds > weather_refresh_interval:
-            timer = pygame.time.get_ticks()
+        refresh_seconds = (pygame.time.get_ticks() - refresh_timer)/1000
+        load_seconds = (pygame.time.get_ticks() - load_timer)/1000
+        if refresh_seconds > weather_refresh_interval:
+            refresh_timer = pygame.time.get_ticks()
             threading.Thread(target=update_weather, daemon=True).start() # update weather in background
-        if seconds > weather_load_interval:
+        if load_seconds > weather_load_interval:
+            load_timer = pygame.time.get_ticks()
             read_weather() # load weather data from file
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
