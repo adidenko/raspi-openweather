@@ -89,6 +89,7 @@ def button(number):
         sys.exit()
 
 def update_weather():
+    x = {}
     if debug:
         print("DEBUG IS ENABLED! Loading data from a fixture: weather.json")
         with open('fixtures/weather.json') as f:
@@ -96,10 +97,9 @@ def update_weather():
     else:
         # Request data via API
         final_url = BASE_URL.format(settings["api_key"],settings["lat"],settings["lon"],settings["temp_unit"])
-        max_retries = 5
+        max_retries = 3
         retry_delay = 5
         response = None
-        x = None
         update_weather_error = ""
 
         for attempt in range(max_retries):
@@ -115,11 +115,11 @@ def update_weather():
             except (requests.ConnectionError, requests.Timeout, requests.RequestException) as e:
                 update_weather_error = "Network error (attempt {}/{}): {}".format(attempt + 1, max_retries, str(e))
                 print(update_weather_error)
-                if attempt < max_retries - 1:
+                if attempt < max_retries:
                     time.sleep(retry_delay)
                     retry_delay *= 2
 
-        if x is None:
+        if x.get("name", "Unknown") == "Unknown" and not update_weather_error:
             update_weather_error = "Failed to fetch weather data after {} retries".format(max_retries)
             print(update_weather_error)
 
