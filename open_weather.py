@@ -122,9 +122,22 @@ def update_weather():
         if x is None:
             update_weather_error = "Failed to fetch weather data after {} retries".format(max_retries)
             print(update_weather_error)
+            x = {
+                "main": {"temp": 0, "feels_like": 0, "humidity": 0, "temp_max": 0, "temp_min": 0},
+                "weather": [{"main": "N/A", "icon": "01d"}],
+                "name": "Unknown",
+                "dt": 0,
+                "sys": {"sunrise": 0, "sunset": 0},
+                "wind": {"speed": 0}
+            }
 
-    f_main = x["main"]
-    f_weather = x["weather"]
+        tmp_name = x.get("name", "Unknown")
+        f_main = x.get("main", {"temp": 0, "feels_like": 0, "humidity": 0, "temp_max": 0, "temp_min": 0})
+        f_weather = x.get("weather", [{"main": "N/A", "icon": "01d"}])
+        today_date = x.get("dt", 0)
+        today_sunrise = x.get("sys", {}).get("sunrise", 0)
+        today_sunset = x.get("sys", {}).get("sunset", 0)
+        today_wind_speed = x.get("wind", {}).get("speed", 0)
 
     weather_data = {
         "current_temp": round(f_main["temp"], 1),
@@ -132,13 +145,13 @@ def update_weather():
         "current_humidity": f_main["humidity"],
         "current_description": f_weather[0]["main"],
         "icon1": f_weather[0]["icon"],
-        "name": x["name"],
-        "today_date": x["dt"],
-        "today_sunrise": x["sys"]["sunrise"],
-        "today_sunset": x["sys"]["sunset"],
+        "name": tmp_name,
+        "today_date": today_date,
+        "today_sunrise": today_sunrise,
+        "today_sunset": today_sunset,
         "today_temp_max": round(f_main["temp_max"], 1),
         "today_temp_min": round(f_main["temp_min"], 1),
-        "today_wind_speed": x["wind"]["speed"],
+        "today_wind_speed": today_wind_speed,
         "today_description": f_weather[0]["main"],
         "icon2": f_weather[0]["icon"],
         "last_updated": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
@@ -287,8 +300,8 @@ def refresh_screen():
 
     # Show error if weather update failed
     if update_weather_error:
-        error_lbl = mfont.render(update_weather_error, 1, (255, 0, 0))
-        screen.blit(error_lbl, (10, height - 50))
+        error_lbl = sfont.render(update_weather_error, 1, (255, 0, 0))
+        screen.blit(error_lbl, (10, height - 70))
 
     # Show last updated time
     if last_updated:
