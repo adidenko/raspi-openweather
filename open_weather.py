@@ -154,7 +154,6 @@ def read_weather():
 
     # Load weather icons
     global load_icon
-    load_icon = pygame.image.load("icons/{}.png".format(data["icon1"]))
 
     try:
         with open('/tmp/open_weather.json') as f:
@@ -174,6 +173,7 @@ def read_weather():
             today_wind_speed = data["today_wind_speed"]
             today_description = data["today_description"]
             update_weather_error = data.get("update_weather_error", "")
+            load_icon = pygame.image.load("icons/{}.png".format(data["icon1"]))
 
     except (FileNotFoundError, json.JSONDecodeError, ValueError, KeyError) as e:
         print("Error reading weather data: {}".format(e))
@@ -189,7 +189,8 @@ def read_weather():
         today_temp_min = 0
         today_wind_speed = 0
         today_description = "N/A"
-        load_icon = None
+        update_weather_error = "Error loading weather data"
+        load_icon = pygame.image.load("icons/01d.png") # default icon
 
 #===================
 
