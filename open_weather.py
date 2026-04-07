@@ -141,6 +141,7 @@ def update_weather():
         "today_wind_speed": x["wind"]["speed"],
         "today_description": f_weather[0]["main"],
         "icon2": f_weather[0]["icon"],
+        "last_updated": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
         "update_weather_error": update_weather_error
     }
 
@@ -149,7 +150,7 @@ def update_weather():
         json.dump(weather_data, f)
 
 def read_weather():
-    global current_temp, current_feels_like, current_humidity, current_description, name, update_weather_error
+    global current_temp, current_feels_like, current_humidity, current_description, name, update_weather_error, last_updated
     global today_date, today_sunrise, today_sunset, today_temp_max, today_temp_min, today_wind_speed, today_description
 
     # Load weather icons
@@ -174,6 +175,7 @@ def read_weather():
             today_description = data["today_description"]
             update_weather_error = data.get("update_weather_error", "")
             load_icon = pygame.image.load("icons/{}.png".format(data["icon1"]))
+            last_updated = data.get("last_updated", "")
 
     except (FileNotFoundError, json.JSONDecodeError, ValueError, KeyError) as e:
         print("Error reading weather data: {}".format(e))
@@ -191,6 +193,7 @@ def read_weather():
         today_description = "N/A"
         update_weather_error = "Error loading weather data"
         load_icon = pygame.image.load("icons/01d.png") # default icon
+        last_updated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 #===================
 
@@ -271,6 +274,7 @@ def refresh_screen():
     screen.blit(today_lbl, (421, 80)) # Today name
     screen.blit(today_descr_lbl, (720, 140)) # description
     screen.blit(load_icon, (700, 60)) # weather icon
+
     # Use vertical pixel step below
     screen.blit(minmax_lbl, (421, px_v_base-px_v_step)) # Temp min/max
     screen.blit(wind_speed_lbl, (421, px_v_base)) # wind speed
@@ -284,7 +288,12 @@ def refresh_screen():
     # Show error if weather update failed
     if update_weather_error:
         error_lbl = mfont.render(update_weather_error, 1, (255, 0, 0))
-        screen.blit(error_lbl, (10, height - 30))
+        screen.blit(error_lbl, (10, height - 50))
+
+    # Show last updated time
+    if last_updated:
+        updated_lbl = sfont.render("Last updated: {}".format(last_updated), 1, white)
+        screen.blit(updated_lbl, (10, height - 30))
 
     time.sleep(.1)
     pygame.display.flip()
