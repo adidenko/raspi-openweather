@@ -40,6 +40,7 @@ with open('open_weather.json') as f:
 
 #============================================================
 
+update_weather_error = ""
 Temp_Unit = settings["temp_unit"]
 BASE_URL = "http://api.openweathermap.org/data/2.5/weather?appid={0}&exclude=minutely,hourly&lat={1}&lon={2}&units={3}"
 
@@ -110,13 +111,31 @@ def update_weather():
     else:
         # Request data via API
         final_url = BASE_URL.format(settings["api_key"],settings["lat"],settings["lon"],settings["temp_unit"])
-        weather_data = requests.get(final_url).json()
-        response = requests.get(final_url)
-        x = response.json()
-        if 199 < response.status_code >= 300:
-            print("ERROR: {} {}".format(response.status_code, x))
-            sys.exit(1)
-        #print(x)
+        max_retries = 6
+        retry_delay = 10
+        response = None
+        x = None
+        update_weather_error = ""
+
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(final_url, timeout=5)
+                x = response.json()
+                if 199 < response.status_code >= 300:
+                    update_weather_error = "ERROR: {} {}".format(response.status_code, x)
+                    print(update_weather_error)
+                else:
+                    update_weather_error = ""
+                break
+            except (requests.ConnectionError, requests.Timeout, requests.RequestException) as e:
+                update_weather_error = "Network error (attempt {}/{}): {}".format(attempt + 1, max_retries, str(e))
+                print(update_weather_error)
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
+
+        if x is None:
+            print("Failed to fetch weather data after {} retries".format(max_retries))
 
     #============ current weather
     f_main = x["main"]
@@ -234,6 +253,11 @@ def refresh_screen():
     # Lines
     pygame.draw.line(screen, white,(0,53),(800,53)) # horizontal top
     pygame.draw.line(screen, white,(400,69),(400,270)) # vertical middle
+
+    # Show error if weather update failed
+    if update_weather_error:
+        error_lbl = mfont.render(update_weather_error, 1, (255, 0, 0))
+        screen.blit(error_lbl, (10, height - 30))
 
     time.sleep(.1)
     pygame.display.flip()
