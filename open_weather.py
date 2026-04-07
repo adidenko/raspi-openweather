@@ -13,6 +13,7 @@ import time
 import datetime
 import requests
 import json
+import threading
 
 pygame.init()
 #========================== SETTINGS ========================
@@ -29,6 +30,7 @@ settings = {
 size = width, height = 800, 480
 fps = 3
 weather_refresh_interval = 900
+weather_load_interval = 30
 
 # Put your sensitive info in the JSON config
 with open('open_weather.json') as f:
@@ -40,7 +42,6 @@ with open('open_weather.json') as f:
 
 #============================================================
 
-update_weather_error = ""
 Temp_Unit = settings["temp_unit"]
 BASE_URL = "http://api.openweathermap.org/data/2.5/weather?appid={0}&exclude=minutely,hourly&lat={1}&lon={2}&units={3}"
 
@@ -88,22 +89,6 @@ def button(number):
         sys.exit()
 
 def update_weather():
-    global current_temp
-    global current_feels_like
-    global current_humidity
-    global current_description
-    global today_date
-    global today_temp
-    global today_description
-    global today_temp_max
-    global today_temp_min
-    global today_wind_speed
-    global today_sunrise
-    global today_sunset
-    global load_icon
-    global logo
-    global name
-
     if debug:
         print("DEBUG IS ENABLED! Loading data from a fixture: weather.json")
         with open('fixtures/weather.json') as f:
@@ -111,8 +96,8 @@ def update_weather():
     else:
         # Request data via API
         final_url = BASE_URL.format(settings["api_key"],settings["lat"],settings["lon"],settings["temp_unit"])
-        max_retries = 6
-        retry_delay = 10
+        max_retries = 5
+        retry_delay = 5
         response = None
         x = None
         update_weather_error = ""
@@ -135,35 +120,76 @@ def update_weather():
                     retry_delay *= 2
 
         if x is None:
-            print("Failed to fetch weather data after {} retries".format(max_retries))
+            update_weather_error = "Failed to fetch weather data after {} retries".format(max_retries)
+            print(update_weather_error)
 
-    #============ current weather
     f_main = x["main"]
     f_weather = x["weather"]
 
-    current_temp = f_main["temp"]
-    current_temp = round(current_temp, 1)
-    current_feels_like = round(f_main["feels_like"], 1) # round to one decimal
-    current_humidity = f_main["humidity"]
-    current_description = f_weather[0]["main"]
-    icon1 = f_weather[0]["icon"]
-    name = x["name"]
+    weather_data = {
+        "current_temp": round(f_main["temp"], 1),
+        "current_feels_like": round(f_main["feels_like"], 1),
+        "current_humidity": f_main["humidity"],
+        "current_description": f_weather[0]["main"],
+        "icon1": f_weather[0]["icon"],
+        "name": x["name"],
+        "today_date": x["dt"],
+        "today_sunrise": x["sys"]["sunrise"],
+        "today_sunset": x["sys"]["sunset"],
+        "today_temp_max": round(f_main["temp_max"], 1),
+        "today_temp_min": round(f_main["temp_min"], 1),
+        "today_wind_speed": x["wind"]["speed"],
+        "today_description": f_weather[0]["main"],
+        "icon2": f_weather[0]["icon"],
+        "update_weather_error": update_weather_error
+    }
 
-    # ================= today
-    today_date = x["dt"]  #todays date
-    today_sunrise = x["sys"]["sunrise"]
-    today_sunset = x["sys"]["sunset"]
-    today_temp_max = round(f_main["temp_max"], 1) # round to one decimal
-    today_temp_min = round(f_main["temp_min"], 1) # round to one decimal
-    today_wind_speed = x["wind"]["speed"]
+    # Write weather data to /tmp/open_weather.json
+    with open('/tmp/open_weather.json', 'w') as f:
+        json.dump(weather_data, f)
 
-    today_description = f_weather[0]["main"]  # conditions
-    icon2 = f_weather[0]["icon"]
+def read_weather():
+    global current_temp, current_feels_like, current_humidity, current_description, name, update_weather_error
+    global today_date, today_sunrise, today_sunset, today_temp_max, today_temp_min, today_wind_speed, today_description
 
-    # ================= icons
-    ICON1 = ("icons/" + str(icon1) + ".png")
-    load_icon = pygame.image.load(ICON1)
-    logo = pygame.image.load("OpenLogo.png")
+    # Load weather icons
+    global load_icon
+    load_icon = pygame.image.load("icons/{}.png".format(data["icon1"]))
+
+    try:
+        with open('/tmp/open_weather.json') as f:
+            data = json.load(f)
+            if not data:
+                raise ValueError("Empty weather data")
+            current_temp = data["current_temp"]
+            current_feels_like = data["current_feels_like"]
+            current_humidity = data["current_humidity"]
+            current_description = data["current_description"]
+            name = data["name"]
+            today_date = data["today_date"]
+            today_sunrise = data["today_sunrise"]
+            today_sunset = data["today_sunset"]
+            today_temp_max = data["today_temp_max"]
+            today_temp_min = data["today_temp_min"]
+            today_wind_speed = data["today_wind_speed"]
+            today_description = data["today_description"]
+            update_weather_error = data.get("update_weather_error", "")
+
+    except (FileNotFoundError, json.JSONDecodeError, ValueError, KeyError) as e:
+        print("Error reading weather data: {}".format(e))
+        current_temp = 0
+        current_feels_like = 0
+        current_humidity = 0
+        current_description = "N/A"
+        name = "Unknown"
+        today_date = 0
+        today_sunrise = 0
+        today_sunset = 0
+        today_temp_max = 0
+        today_temp_min = 0
+        today_wind_speed = 0
+        today_description = "N/A"
+        load_icon = None
 
 #===================
 
@@ -267,11 +293,13 @@ def main():
     timer = pygame.time.get_ticks()
     while True:
         seconds=(pygame.time.get_ticks() - timer)/1000
-        if seconds > weather_refresh_interval: # check every 4 min
+        if seconds > weather_refresh_interval:
             timer = pygame.time.get_ticks()
-            update_weather() # update weather
+            threading.Thread(target=update_weather, daemon=True).start() # update weather in background
+        if seconds > weather_load_interval:
+            read_weather() # load weather data from file
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN: #click on logo
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 click_pos = pygame.mouse.get_pos()
                 print(click_pos)
                 on_click()
@@ -283,5 +311,7 @@ def main():
         clock.tick(fps) #screen refresh fps
         refresh_screen()
 
-update_weather()
+threading.Thread(target=update_weather, daemon=True).start() # update weather in background
+time.sleep(5) # give it a second to fetch data before first load
+read_weather() # load weather data from file
 main()
