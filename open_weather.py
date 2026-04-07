@@ -10,7 +10,6 @@
 import sys, pygame
 from pygame.locals import *
 import time
-import datetime
 import requests
 import json
 import threading
@@ -30,7 +29,7 @@ settings = {
 size = width, height = 800, 480
 fps = 3
 weather_refresh_interval = 900
-weather_load_interval = 30
+weather_load_interval = 60
 
 # Put your sensitive info in the JSON config
 with open('open_weather.json') as f:
@@ -97,8 +96,8 @@ def update_weather():
     else:
         # Request data via API
         final_url = BASE_URL.format(settings["api_key"],settings["lat"],settings["lon"],settings["temp_unit"])
-        max_retries = 3
-        retry_delay = 5
+        max_retries = 6
+        retry_delay = 10
         response = None
         update_weather_error = ""
 
