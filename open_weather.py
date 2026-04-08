@@ -275,7 +275,7 @@ def refresh_screen():
     screen.blit(time_lbl2, (645, 13)) # HH:MM
     screen.blit(time_lbl3,(750, 13)) # seconds
     screen.blit(load_icon, (280, 60)) # weather icon
-    screen.blit(descrip1_lbl, (300, 140)) # description
+    screen.blit(descrip1_lbl, (300, 180)) # description
     screen.blit(outsideT_lbl, (40, 80)) # temp
     # Use vertical pixel step below
     screen.blit(name_lbl, (40, px_v_base)) # location name
@@ -284,7 +284,7 @@ def refresh_screen():
 
     # Today section
     screen.blit(today_lbl, (421, 80)) # Today name
-    screen.blit(today_descr_lbl, (720, 140)) # description
+    screen.blit(today_descr_lbl, (720, 180)) # description
     screen.blit(load_icon, (700, 60)) # weather icon
 
     # Use vertical pixel step below
