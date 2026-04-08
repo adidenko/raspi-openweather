@@ -182,7 +182,9 @@ def read_weather():
             today_wind_speed = data["today_wind_speed"]
             today_description = data["today_description"]
             update_weather_error = data.get("update_weather_error", "")
+            # load icon and resize to 100x100
             load_icon = pygame.image.load("icons/{}/{}.png".format(icons_theme, data["icon1"]))
+            load_icon = pygame.transform.scale(load_icon, (100, 100))
             last_updated = data.get("last_updated", "")
 
     except (FileNotFoundError, json.JSONDecodeError, ValueError, KeyError) as e:
@@ -200,7 +202,9 @@ def read_weather():
         today_wind_speed = 0
         today_description = "N/A"
         update_weather_error = "Error loading weather data"
+        # load icon and resize to 100x100
         load_icon = pygame.image.load("icons/{}/01d.png".format(icons_theme)) # default icon
+        load_icon = pygame.transform.scale(load_icon, (100, 100))
         last_updated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 #===================
