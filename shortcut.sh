@@ -1,24 +1,18 @@
 #!/bin/bash
 #
-#create shortcut
-
-
 # create shortcut on desktop
- 
-touch weather.desktop
+#
+DIR=$(pwd)
+
 cat <<EOF > weather.desktop
-
-#!/usr/bin/bash
-
 [Desktop Entry]
 Name=Openweather
 Type=Application
-Exec=lxterminal -t "WEATHER" --working-directory=/home/pi/raspi-openweather/ -e ./weather.sh
-Icon=/home/pi/raspi-openweather/OpenLogo.png
-Comment=test
+Exec=lxterminal -t "WEATHER" --working-directory=$DIR -e ./weather.sh
+Icon=${DIR}/OpenLogo.png
+Comment=OpenWeather
 Terminal=true
-
 EOF
 
-sudo chmod 755 weather.desktop
-sudo mv weather.desktop /home/pi/Desktop
+chmod 755 weather.desktop
+mv weather.desktop ~/Desktop

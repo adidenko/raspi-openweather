@@ -1,7 +1,4 @@
 #!/bin/bash
 #weather.sh
 
-sudo python open_weather.py
-
-
-
+env python open_weather.py
