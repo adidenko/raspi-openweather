@@ -25,6 +25,10 @@ settings = {
     'temp_unit': 'metric', #unit can be metric, or imperial
 }
 
+# icons_theme is subfolder in icons/ with the icons to use. Default is "default" which has the standard openweather icons.
+# You can create your own theme by making a new folder and putting icons named like "01d.png", "02n.png", etc. in it, following the openweather icon naming convention.
+icons_theme = "weather_icons_dovora_interactive"
+
 #set size of the screen
 size = width, height = 800, 480
 fps = 3
@@ -178,7 +182,7 @@ def read_weather():
             today_wind_speed = data["today_wind_speed"]
             today_description = data["today_description"]
             update_weather_error = data.get("update_weather_error", "")
-            load_icon = pygame.image.load("icons/{}.png".format(data["icon1"]))
+            load_icon = pygame.image.load("icons/{}/{}.png".format(icons_theme, data["icon1"]))
             last_updated = data.get("last_updated", "")
 
     except (FileNotFoundError, json.JSONDecodeError, ValueError, KeyError) as e:
@@ -196,7 +200,7 @@ def read_weather():
         today_wind_speed = 0
         today_description = "N/A"
         update_weather_error = "Error loading weather data"
-        load_icon = pygame.image.load("icons/01d.png") # default icon
+        load_icon = pygame.image.load("icons/{}/01d.png".format(icons_theme)) # default icon
         last_updated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 #===================
